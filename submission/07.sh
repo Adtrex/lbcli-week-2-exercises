@@ -20,4 +20,4 @@ utxo_vout=1
 
 rawtxhex=$(bitcoin-cli -regtest createrawtransaction '''[ { "txid": "'$utxo_txid'", "vout": '$utxo_vout' } ]''' '''{ "'$recipient_address'": "'$amount_to_send'" }''')
 
-bitcoin-cli -regtest decoderawtransaction "$rawtxhex"
+echo $rawtxhex
