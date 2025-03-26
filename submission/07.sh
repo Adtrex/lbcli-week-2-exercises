@@ -15,6 +15,6 @@ utxo_txid=$(echo "$decoded_tx" | jq -r '.txid')
 utxo_vout=$(echo "$decoded_tx" | jq '[.vout[].value] | add * 100000000 | floor')
 
 
-rawtxhex=$(bitcoin-cli createrawtransaction '''[ { "txid": "'$utxo_txid'", "vout": '$utxo_vout' } ]''' '''{ "'$recipient'": "'$amount_to_send'" }''')
+rawtxhex=$(bitcoin-cli createrawtransaction '''[ { "txid": "'$utxo_txid'", "vout": '$utxo_vout' } ]''' '''{ "'$recipient_address'": "'$amount_to_send'" }''')
 
 bitcoin-cli decoderawtransaction $rawtxhex
