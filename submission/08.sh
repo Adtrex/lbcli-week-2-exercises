@@ -33,5 +33,11 @@ rawtxhex=$(bitcoin-cli -regtest createrawtransaction "$inputs" "{ \"$recipient_a
 
 # rawtxhex=$(bitcoin-cli -regtest createrawtransaction '''[ { "txid": "'$utxo_txid'", "vout": '$utxo_vout' } ]''' '''{ "'$recipient_address'": "'$amount_to_send'" }''')
 
-bump_tx=$(bitcoin-cli -regtest bumpfee utxo_txid)
+signed_tx=$(bitcoin-cli -regtest signrawtransactionwithwallet "$rawtxhex")
+signed_tx_hex=$(echo "$signed_tx" | jq -r '.hex')
+
+broadcast_txid=$(bitcoin-cli -regtest sendrawtransaction "$signed_tx_hex")
+
+
+bump_tx=$(bitcoin-cli -regtest bumpfee "$broadcast_txid")
 echo "$bump_tx"
