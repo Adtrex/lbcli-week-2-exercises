@@ -21,8 +21,3 @@ utxo_vout=$(echo "$decoded_tx" | jq -r '.vout | to_entries | .[0].key')
 rawtxhex=$(bitcoin-cli -regtest createrawtransaction "[ { \"txid\": \"$utxo_txid\", \"vout\": $utxo_vout } ]" "{ \"$recipient_address\": $amount_to_send }")
 
 bitcoin-cli -regtest decoderawtransaction "$rawtxhex"
-
-signed_tx_json=$(bitcoin-cli -regtest signrawtransactionwithwallet "$rawtxhex")
-signedtx=$(echo "$signed_tx_json" | jq -r '.hex')
-
-bitcoin-cli -regtest sendrawtransaction "$signedtx"
