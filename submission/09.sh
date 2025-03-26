@@ -49,17 +49,17 @@ echo ""
 
 # STUDENT TASK: Decode the transaction to get the TXID
 # WRITE YOUR SOLUTION BELOW:
-TXID=
+TXID=$(bitcoin-cli decoderawtransaction $BASE_TX | jq -r '.txid')
 check_cmd "Transaction decoding" "TXID" "$TXID"
 
 echo "Transaction ID: $TXID"
 
 # STUDENT TASK: Extract the number of inputs and outputs from the transaction
 # WRITE YOUR SOLUTION BELOW:
-NUM_INPUTS=
+NUM_INPUTS=$(bitcoin-cli decoderawtransaction $BASE_TX | jq '.vin | length')
 check_cmd "Input counting" "NUM_INPUTS" "$NUM_INPUTS"
 
-NUM_OUTPUTS=
+NUM_OUTPUTS=$(bitcoin-cli decoderawtransaction $BASE_TX | jq '.vout | length')
 check_cmd "Output counting" "NUM_OUTPUTS" "$NUM_OUTPUTS"
 
 echo "Number of inputs: $NUM_INPUTS"
@@ -67,7 +67,7 @@ echo "Number of outputs: $NUM_OUTPUTS"
 
 # STUDENT TASK: Extract the value of the first output in satoshis
 # WRITE YOUR SOLUTION BELOW:
-FIRST_OUTPUT_VALUE=
+FIRST_OUTPUT_VALUE=$(bitcoin-cli decoderawtransaction $BASE_TX | jq '.vout[0].value * 100000000 | floor')
 check_cmd "Output value extraction" "FIRST_OUTPUT_VALUE" "$FIRST_OUTPUT_VALUE"
 
 echo "First output value: $FIRST_OUTPUT_VALUE satoshis"
@@ -88,10 +88,10 @@ echo ""
 # STUDENT TASK: Extract the available UTXOs from the decoded transaction for spending
 # WRITE YOUR SOLUTION BELOW:
 UTXO_TXID=$TXID
-UTXO_VOUT_INDEX=
+UTXO_VOUT_INDEX=0
 check_cmd "UTXO vout selection" "UTXO_VOUT_INDEX" "$UTXO_VOUT_INDEX"
 
-UTXO_VALUE=
+UTXO_VALUE=$FIRST_OUTPUT_VALUE
 check_cmd "UTXO value extraction" "UTXO_VALUE" "$UTXO_VALUE"
 
 echo "Selected UTXO:"
@@ -130,11 +130,11 @@ echo ""
 
 # STUDENT TASK: Calculate the approximate transaction size and fee
 # WRITE YOUR SOLUTION BELOW:
-TX_SIZE=
+TX_SIZE=$((10 + (68 * 1) + (31 * 2)))
 check_cmd "Transaction size calculation" "TX_SIZE" "$TX_SIZE"
 
 FEE_RATE=10  # satoshis/vbyte
-FEE_SATS=
+FEE_SATS=$((TX_SIZE * FEE_RATE))
 check_cmd "Fee calculation" "FEE_SATS" "$FEE_SATS"
 
 echo "Estimated transaction size: $TX_SIZE vbytes"
@@ -168,7 +168,7 @@ PAYMENT_ADDRESS="2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP"
 CHANGE_ADDRESS="bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht"
 
 # STUDENT TASK: Create a proper input JSON for createrawtransaction
-TX_INPUTS=
+TX_INPUTS=$(jq -n --arg txid "$UTXO_TXID" --argjson vout "$UTXO_VOUT_INDEX" '[{ "txid": $txid, "vout": $vout, "sequence": 4294967293 }]')
 check_cmd "Input JSON creation" "TX_INPUTS" "$TX_INPUTS"
 
 # Verify RBF is enabled in the input structure
@@ -180,19 +180,19 @@ fi
 
 # STUDENT TASK: Calculate the change amount
 PAYMENT_AMOUNT=15000000  # in satoshis
-CHANGE_AMOUNT=
+CHANGE_AMOUNT=$((UTXO_VALUE - PAYMENT_AMOUNT - FEE_SATS))
 check_cmd "Change calculation" "CHANGE_AMOUNT" "$CHANGE_AMOUNT"
 
 # Convert amounts to BTC for createrawtransaction
-PAYMENT_BTC=
-CHANGE_BTC=
+PAYMENT_BTC=$(awk "BEGIN {print $PAYMENT_AMOUNT / 100000000}")
+CHANGE_BTC=$(awk "BEGIN {print $CHANGE_AMOUNT / 100000000}")
 
 # STUDENT TASK: Create the outputs JSON structure
-TX_OUTPUTS=
+TX_OUTPUTS=$(jq -n --arg addr1 "$PAYMENT_ADDRESS" --arg amount1 "$PAYMENT_BTC" --arg addr2 "$CHANGE_ADDRESS" --arg amount2 "$CHANGE_BTC" '{($addr1): $amount1, ($addr2): $amount2}')
 check_cmd "Output JSON creation" "TX_OUTPUTS" "$TX_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction
-RAW_TX=
+RAW_TX=$(bitcoin-cli createrawtransaction "$TX_INPUTS" "$TX_OUTPUTS")
 check_cmd "Raw transaction creation" "RAW_TX" "$RAW_TX"
 
 echo "Successfully created raw transaction!"
