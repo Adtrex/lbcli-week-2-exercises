@@ -20,7 +20,6 @@ utxo_txid=$(echo "$decoded_tx" | jq -r '.txid')
 inputs="["
 num_utxos=$(echo "$decoded_tx" | jq '.vout | length')
 for (( i=0; i<num_utxos; i++ )); do
-    # Retrieve the output index (vout) for each UTXO.
     vout_index=$(echo "$decoded_tx" | jq -r ".vout[$i].n")
     inputs+="{\"txid\":\"$utxo_txid\",\"vout\":$vout_index,\"sequence\":4294967293},"
 done
@@ -28,32 +27,7 @@ done
 inputs=${inputs%,}
 inputs+="]"
 
-total_value=$(echo "$decoded_tx" | jq '[.vout[].value] | add')
-
-
-total_satoshis=$(echo "$total_value * 100000000" | bc)
-amount_to_send_sats=$(echo "$amount_to_send * 100000000" | bc)
-
-
-fee_satoshis=10000
-
-
-if (( $(echo "$total_satoshis < $amount_to_send_sats + $fee_satoshis" | bc -l) )); then
-    echo "Error: Insufficient UTXOs to cover the amount plus fee."
-    exit 1
-fi
-
-change_satoshis=$(echo "$total_satoshis - $amount_to_send_sats - $fee_satoshis" | bc)
-
-change_address=$(bitcoin-cli -regtest getrawchangeaddress)
-
-if [ "$(echo "$change_satoshis > 0" | bc -l)" -eq 1 ]; then
-    change_btc=$(echo "scale=8; $change_satoshis / 100000000" | bc)
-
-    outputs="{ \"$recipient_address\": $amount_to_send, \"$change_address\": $change_btc }"
-else
-    outputs="{ \"$recipient_address\": $amount_to_send }"
-fi
+outputs="{ \"$recipient_address\": $amount_to_send }"
 
 rawtxhex=$(bitcoin-cli -regtest createrawtransaction "$inputs" "$outputs")
 
