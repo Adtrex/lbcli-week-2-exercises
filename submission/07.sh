@@ -10,19 +10,40 @@ raw_tx="01000000000101c8b0928edebbec5e698d5f86d0474595d9f6a5b2e4e3772cd9d1005f23
 
 
 decoded_tx=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx")
-
-
 utxo_txid=$(echo "$decoded_tx" | jq -r '.txid')
+utxo_vout=$(echo "$decoded_tx" | jq -r '.vout | to_entries | .[0].key')
 
 
-utxo_vout=$(echo "$decoded_tx" | jq -r '.vout | to_entries | .[0].key')  # Get the first output index
+exists=$(bitcoin-cli -regtest getrawtransaction "$utxo_txid" 1 2>/dev/null)
+
+if [[ -z "$exists" ]]; then
+    echo "UTXO is missing. Re-broadcasting the raw transaction..."
+    bitcoin-cli -regtest sendrawtransaction "$raw_tx"
+    
+
+    bitcoin-cli -regtest generate 1
+    echo "Transaction confirmed."
+fi
 
 
-rawtxhex=$(bitcoin-cli -regtest createrawtransaction "[ { \"txid\": \"$utxo_txid\", \"vout\": $utxo_vout } ]" "{ \"$recipient_address\": $amount_to_send }")
+change_address=$(bitcoin-cli -regtest getnewaddress)
 
+amount_after_fee=$((amount_to_send - 10000))
+
+
+rawtxhex=$(bitcoin-cli -regtest createrawtransaction \
+"[ { \"txid\": \"$utxo_txid\", \"vout\": $utxo_vout } ]" \
+"{ \"$recipient_address\": $amount_after_fee, \"$change_address\": 10000 }")
+
+
+echo "Created Raw Transaction:"
 bitcoin-cli -regtest decoderawtransaction "$rawtxhex"
+
 
 signed_tx_json=$(bitcoin-cli -regtest signrawtransactionwithwallet "$rawtxhex")
 signedtx=$(echo "$signed_tx_json" | jq -r '.hex')
 
-bitcoin-cli -regtest sendrawtransaction "$signedtx"
+
+txid=$(bitcoin-cli -regtest sendrawtransaction "$signedtx")
+
+echo "$txid"
