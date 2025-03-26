@@ -15,7 +15,7 @@ decoded_tx=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx")
 utxo_txid=$(echo "$decoded_tx" | jq -r '.txid')
 
 
-utxo_vout=$(echo "$decoded_tx" | jq -r '.vout[0].n')
+utxo_vout=$(echo "$decoded_tx" | jq -r '.vout')
 
 
 rawtxhex=$(bitcoin-cli -regtest createrawtransaction "[ { \"txid\": \"$utxo_txid\", \"vout\": $utxo_vout } ]" "{ \"$recipient_address\": $amount_to_send }")
