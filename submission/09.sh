@@ -68,12 +68,14 @@ echo "Number of outputs: $NUM_OUTPUTS"
 # STUDENT TASK: Extract the value of the first output in satoshis
 # WRITE YOUR SOLUTION BELOW:
 
+# number of sats in 1 BTC
+one_btc="100000000"
 
 # value in BTC
 value_btc=$(bitcoin-cli  -regtest decoderawtransaction $BASE_TX | jq -r ".vout[0] | .value")
 
 # value in sat
-result=$(echo "$value_btc * 100000000" | bc)
+result=$(echo "$value_btc * $one_btc" | bc)
 
 # rounded off value
 FIRST_OUTPUT_VALUE=$(printf "%.0f\n" "$result")
