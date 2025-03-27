@@ -210,7 +210,7 @@ echo ""
 
 # STUDENT TASK: Decode the raw transaction
 # WRITE YOUR SOLUTION BELOW:
-DECODED_TX=$(bitcoin-cli  -regtest -rpcwallet=btrustwallet decoderawtransaction $RAW_TX)
+DECODED_TX=$(bitcoin-cli  -regtest decoderawtransaction $RAW_TX)
 check_cmd "Transaction decoding" "DECODED_TX" "$DECODED_TX"
 
 # STUDENT TASK: Extract and verify the key components from the decoded transaction
