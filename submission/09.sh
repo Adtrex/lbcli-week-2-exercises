@@ -215,7 +215,6 @@ check_cmd "Transaction decoding" "DECODED_TX" "$DECODED_TX"
 
 # STUDENT TASK: Extract and verify the key components from the decoded transaction
 # WRITE YOUR SOLUTION BELOW:
-
 sequence_number=$(echo $DECODED_TX | jq -r ".vin[]"| jq -r ".sequence" )
 
 if [[ "$sequence_number" -gt 0 && "$sequence_number" -lt 4294967294 ]]; then
