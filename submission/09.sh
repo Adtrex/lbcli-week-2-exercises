@@ -49,17 +49,17 @@ echo ""
 
 # STUDENT TASK: Decode the transaction to get the TXID
 # WRITE YOUR SOLUTION BELOW:
-TXID=$(bitcoin-cli decoderawtransaction $BASE_TX | jq -r '.txid')
+TXID=$(bitcoin-cli -regtest decoderawtransaction $BASE_TX | jq -r '.txid')
 check_cmd "Transaction decoding" "TXID" "$TXID"
 
 echo "Transaction ID: $TXID"
 
 # STUDENT TASK: Extract the number of inputs and outputs from the transaction
 # WRITE YOUR SOLUTION BELOW:
-NUM_INPUTS=$(bitcoin-cli decoderawtransaction $BASE_TX | jq '.vin | length')
+NUM_INPUTS=$(bitcoin-cli -regtest decoderawtransaction $BASE_TX | jq '.vin | length')
 check_cmd "Input counting" "NUM_INPUTS" "$NUM_INPUTS"
 
-NUM_OUTPUTS=$(bitcoin-cli decoderawtransaction $BASE_TX | jq '.vout | length')
+NUM_OUTPUTS=$(bitcoin-cli -regtest decoderawtransaction $BASE_TX | jq '.vout | length')
 check_cmd "Output counting" "NUM_OUTPUTS" "$NUM_OUTPUTS"
 
 echo "Number of inputs: $NUM_INPUTS"
@@ -67,7 +67,7 @@ echo "Number of outputs: $NUM_OUTPUTS"
 
 # STUDENT TASK: Extract the value of the first output in satoshis
 # WRITE YOUR SOLUTION BELOW:
-FIRST_OUTPUT_VALUE=$(bitcoin-cli decoderawtransaction $BASE_TX | jq '.vout[0].value * 100000000 | floor')
+FIRST_OUTPUT_VALUE=$(bitcoin-cli -regtest decoderawtransaction $BASE_TX | jq '.vout[0].value * 100000000 | floor')
 check_cmd "Output value extraction" "FIRST_OUTPUT_VALUE" "$FIRST_OUTPUT_VALUE"
 
 echo "First output value: $FIRST_OUTPUT_VALUE satoshis"
@@ -192,7 +192,7 @@ TX_OUTPUTS=$(jq -n --arg addr1 "$PAYMENT_ADDRESS" --arg amount1 "$PAYMENT_BTC" -
 check_cmd "Output JSON creation" "TX_OUTPUTS" "$TX_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction
-RAW_TX=$(bitcoin-cli createrawtransaction "$TX_INPUTS" "$TX_OUTPUTS")
+RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$TX_INPUTS" "$TX_OUTPUTS")
 check_cmd "Raw transaction creation" "RAW_TX" "$RAW_TX"
 
 echo "Successfully created raw transaction!"
