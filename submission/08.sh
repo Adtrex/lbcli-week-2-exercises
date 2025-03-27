@@ -38,4 +38,4 @@ outputs="{ \"$recipient_address\": $amount_to_send }"
 rawtxhex=$(bitcoin-cli -regtest createrawtransaction "$inputs" "$outputs")
 
 
-echo "$rawtxhex"
+echo "output: $rawtxhex"
