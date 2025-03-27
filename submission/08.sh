@@ -21,21 +21,15 @@ inputs="["
 num_utxos=$(echo "$decoded_tx" | jq '.vout | length')
 for (( i=0; i<num_utxos; i++ )); do
     vout_index=$(echo "$decoded_tx" | jq -r ".vout[$i].n")
-    inputs+="{\"txid\":\"$utxo_txid\",\"vout\":$vout_index,\"sequence\":4294967293},"
+    inputs+="{\"txid\":\"$utxo_txid\",\"vout\":$vout_index,\"sequence\":1},"
 done
 
 inputs=${inputs%,}
 inputs+="]"
-
-total_value=$(echo "$decoded_tx" | jq '[.vout[].value] | add')
-total_satoshis=$(echo "$total_value * 100000000" | bc)
-amount_to_send_sats=$(echo "$amount_to_send * 100000000" | bc)
-
-
 
 outputs="{ \"$recipient_address\": $amount_to_send }"
 
 rawtxhex=$(bitcoin-cli -regtest createrawtransaction "$inputs" "$outputs")
 
 
-echo "output: $rawtxhex"
+echo "$rawtxhex"
